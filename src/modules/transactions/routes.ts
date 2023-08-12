@@ -22,9 +22,19 @@ export const transactionsRoutes = async (app: FastifyInstance) => {
   });
 
   app.get("/", async (_req, response) => {
-    const transactions = await knex("transactions").select("*").returning("*");
+    const transactions = await knex("transactions").select();
 
-    return response.status(200).send(transactions);
+    return response.status(200).send({ transactions });
+  });
+
+  app.get("/:id", async (request, response) => {
+    const paramsSchema = z.object({ id: z.string() });
+
+    const { id } = paramsSchema.parse(request.params);
+
+    const transaction = await knex("transactions").select().where({ id });
+
+    return response.status(200).send({ transaction });
   });
 
   app.put("/:id", async (request, response) => {
@@ -47,7 +57,7 @@ export const transactionsRoutes = async (app: FastifyInstance) => {
       .where({ id })
       .returning("*");
 
-    return response.status(200).send(newTransaction);
+    return response.status(200).send({ transaction: newTransaction });
   });
 
   app.delete("/:id", async (request, response) => {
